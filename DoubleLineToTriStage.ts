@@ -1,4 +1,4 @@
-const w : number = window.innerWidth, h = window.innerHeight
+const w : number = window.innerWidth, h = window.innerHeight, nodes : number = 5
 class DoubleLineToTriStage {
     canvas : HTMLCanvasElement = document.createElement('canvas')
     context : CanvasRenderingContext2D
@@ -35,7 +35,7 @@ class State {
     prevScale : number = 0
 
     update(cb : Function) {
-        this.scale += 0.1 * this.dir
+        this.scale += 0.05 * this.dir
         if (Math.abs(this.scale - this.prevScale) > 1) {
             this.scale = this.prevScale + this.dir
             this.dir = 0
@@ -68,5 +68,62 @@ class Animator {
             this.animated = false
             clearInterval(this.interval)
         }
+    }
+}
+
+class DLTTNode {
+    prev : DLTTNode
+    next : DLTTNode
+    state : State = new State()
+
+    constructor(private i : number) {
+        this.addNeighbor()
+    }
+
+    addNeighbor() {
+        if (this.i < nodes - 1) {
+            this.next = new DLTTNode(this.i + 1)
+            this.next.prev = this
+        }
+    }
+
+    draw(context : CanvasRenderingContext2D) {
+        const gap : number = w / (nodes + 1)
+        const size : number = gap / 3
+        context.lineWidth = Math.min(w, h) / 60
+        context.lineCap = 'round'
+        context.strokeStyle = '#2196F3'
+        context.save()
+        context.translate(gap * this.i + gap, h/2)
+        for (var j = 0; j < 2; j++) {
+            const sc : number = Math.min(0.5, Math.max(0, this.state.scale - 0.5)) * 2
+            const sf : number = 1 - 2 * j
+            context.beginPath()
+            context.moveTo(-size, 0)
+            context.lineTo(0, -size * sf * sc)
+            context.lineTo(size, 0)
+            context.stroke()
+        }
+        context.restore()
+    }
+
+    update(cb : Function) {
+        this.state.update(cb)
+    }
+
+    startUpdating(cb : Function) {
+        this.state.startUpdating(cb)
+    }
+
+    getNext(dir : number, cb : Function) : DLTTNode {
+        var curr : DLTTNode = this.prev
+        if (dir == 1) {
+            curr = this.next
+        }
+        if (curr) {
+            return curr
+        }
+        cb()
+        return this
     }
 }
