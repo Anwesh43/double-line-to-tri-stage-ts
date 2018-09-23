@@ -115,6 +115,9 @@ class DLTTNode {
             context.stroke()
         }
         context.restore()
+        if (this.next) {
+            this.next.draw(context)
+        }
     }
 
     update(cb : Function) {
@@ -139,7 +142,8 @@ class DLTTNode {
 }
 
 class DoubleLineToTri {
-    curr : DLTTNode = new DLTTNode(0)
+    root : DLTTNode = new DLTTNode(0)
+    curr : DLTTNode = this.root
     dir : number = 1
 
     update(cb : Function) {
@@ -156,6 +160,6 @@ class DoubleLineToTri {
     }
 
     draw(context : CanvasRenderingContext2D) {
-        this.curr.draw(context)
+        this.root.draw(context)
     }
 }
