@@ -2,6 +2,8 @@ const w : number = window.innerWidth, h = window.innerHeight, nodes : number = 5
 class DoubleLineToTriStage {
     canvas : HTMLCanvasElement = document.createElement('canvas')
     context : CanvasRenderingContext2D
+    dltt : DoubleLineToTri = new DoubleLineToTri()
+    animator : Animator = new Animator()
 
     initCanvas() {
         this.canvas.width = w
@@ -13,11 +15,19 @@ class DoubleLineToTriStage {
     render() {
         this.context.fillStyle = '#212121'
         this.context.fillRect(0, 0, w, h)
+        this.dltt.draw(this.context)
     }
 
     handleTap() {
         this.canvas.onmousedown = () => {
-
+            this.dltt.startUpdating(() => {
+                this.animator.start(() => {
+                    this.render()
+                    this.dltt.update(() => {
+                        this.animator.stop()
+                    })
+                })
+            })
         }
     }
 
@@ -96,7 +106,7 @@ class DLTTNode {
         context.save()
         context.translate(gap * this.i + gap, h/2)
         for (var j = 0; j < 2; j++) {
-            const sc : number = Math.min(0.5, Math.max(0, this.state.scale - 0.5)) * 2
+            const sc : number = Math.min(0.5, Math.max(0, this.state.scale - 0.5 * j)) * 2
             const sf : number = 1 - 2 * j
             context.beginPath()
             context.moveTo(-size, 0)
